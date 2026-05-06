@@ -56,6 +56,22 @@ jobs:
       - aws-cli/setup
       - checkout
       - run:
+          name: Create EB Config
+          command: |
+          mkdir -p .elasticbeanstalk
+            cat <<EOF > .elasticbeanstalk/config.yml
+            branch-defaults:
+              master:
+                environment: udagram-api-dev
+            global:
+              application_name: udagram-api-dev
+              default_platform: node.js
+              default_region: us-east-1
+              profile: null
+              sc: git
+            EOF
+          
+      - run:
           name: Deploy App
           # Install, build, deploy in both apps
           command: |
