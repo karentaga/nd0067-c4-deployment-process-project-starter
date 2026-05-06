@@ -12,7 +12,6 @@ jobs:
       - node/install:
           node-version: '14.15'         
       - checkout
-      # FIX ADDED HERE: build job needs this because npm run api:build uses it
       - run:
           name: Fix EB Config Path for Build
           command: |
