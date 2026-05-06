@@ -56,15 +56,21 @@ jobs:
       - aws-cli/setup
       - checkout
       - run:
-          name: Create EB Config
+          name: Create EB Config and Fix Paths
           command: |
+            # Navigate to the API folder
+            cd udagram/udagram-api
+            
+            # Create the missing folder
             mkdir -p .elasticbeanstalk
+            
+            # Create the config file (Make sure the environment name matches AWS)
             cat \<<EOF > .elasticbeanstalk/config.yml
             branch-defaults:
               master:
                 environment: udagram-api-dev
             global:
-              application_name: udagram-api-dev
+              application_name: udagram-api
               default_platform: node.js
               default_region: us-east-1
               profile: null
