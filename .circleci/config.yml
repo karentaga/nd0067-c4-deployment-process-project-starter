@@ -1,71 +1,23 @@
 version: 2.1
 orbs:
-  # orgs contain basc recipes and reproducible actions (install node, aws, etc.)
   node: circleci/node@5.0.2
   eb: circleci/aws-elastic-beanstalk@2.0.1
   aws-cli: circleci/aws-cli@3.1.1
-  # different jobs are calles later in the workflows sections
+
 jobs:
   build:
     docker:
-      # the base image can run most needed actions with orbs
       - image: "cimg/node:14.15"
     steps:
-      # install node and checkout code
       - node/install:
           node-version: '14.15'         
       - checkout
-      # Use root level package.json to install dependencies in the frontend app
+      # FIX ADDED HERE: build job needs this because npm run api:build uses it
       - run:
-          name: Install Front-End Dependencies
+          name: Fix EB Config Path for Build
           command: |
-            echo "NODE --version" 
-            echo $(node --version)
-            echo "NPM --version" 
-            echo $(npm --version)
-            npm run frontend:install
-      # Install dependencies in the the backend API          
-      - run:
-          name: Install API Dependencies
-          command: |
-            npm run api:install           
-      # Lint the frontend
-      - run:
-          name: Front-End Lint
-          command: |
-            npm run frontend:lint         
-      # Build the frontend app
-      - run:
-          name: Front-End Build
-          command: |
-            npm run frontend:build
-      # Build the backend API      
-      - run:
-          name: API Build
-          command: |
-            npm run api:build
-  # deploy step will run only after manual approval
-  deploy:
-    docker:
-      - image: "cimg/base:stable"
-      # more setup needed for aws, node, elastic beanstalk
-    steps:
-      - node/install:
-          node-version: '14.15' 
-      - eb/setup
-      - aws-cli/setup
-      - checkout
-      - run:
-          name: Create EB Config and Fix Paths
-          command: |
-            # Navigate to the API folder
-            cd udagram/udagram-api
-            
-            # Create the missing folder
-            mkdir -p .elasticbeanstalk
-            
-            # Create the config file (Make sure the environment name matches AWS)
-            cat \<<EOF > .elasticbeanstalk/config.yml
+            mkdir -p udagram/udagram-api/.elasticbeanstalk
+            cat \<<EOF > udagram/udagram-api/.elasticbeanstalk/config.yml
             branch-defaults:
               master:
                 environment: udagram-api-dev
@@ -76,10 +28,53 @@ jobs:
               profile: null
               sc: git
             EOF
-          
+      - run:
+          name: Install Front-End Dependencies
+          command: |
+            npm run frontend:install
+      - run:
+          name: Install API Dependencies
+          command: |
+            npm run api:install           
+      - run:
+          name: Front-End Lint
+          command: |
+            npm run frontend:lint         
+      - run:
+          name: Front-End Build
+          command: |
+            npm run frontend:build
+      - run:
+          name: API Build
+          command: |
+            npm run api:build
+
+  deploy:
+    docker:
+      - image: "cimg/base:stable"
+    steps:
+      - node/install:
+          node-version: '14.15' 
+      - eb/setup
+      - aws-cli/setup
+      - checkout
+      - run:
+          name: Create EB Config for Deploy
+          command: |
+            mkdir -p udagram/udagram-api/.elasticbeanstalk
+            cat \<<EOF > udagram/udagram-api/.elasticbeanstalk/config.yml
+            branch-defaults:
+              master:
+                environment: udagram-api-dev
+            global:
+              application_name: udagram-api
+              default_platform: node.js
+              default_region: us-east-1
+              profile: null
+              sc: git
+            EOF
       - run:
           name: Deploy App
-          # Install, build, deploy in both apps
           command: |
             npm run frontend:install
             npm run api:install            
