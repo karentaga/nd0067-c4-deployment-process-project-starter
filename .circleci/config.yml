@@ -59,7 +59,7 @@ jobs:
           name: Create EB Config
           command: |
             mkdir -p .elasticbeanstalk
-            cat <<EOF > .elasticbeanstalk/config.yml
+            cat \<<EOF > .elasticbeanstalk/config.yml
             branch-defaults:
               master:
                 environment: udagram-api-dev
