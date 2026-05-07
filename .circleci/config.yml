@@ -19,7 +19,7 @@ jobs:
             cat \<<EOF > udagram/udagram-api/.elasticbeanstalk/config.yml
             branch-defaults:
               master:
-                environment: udagram-api-dev
+                environment: Udagram-final-project-env
             global:
               application_name: udagram-api
               default_platform: node.js
@@ -64,7 +64,7 @@ jobs:
             cat \<<EOF > udagram/udagram-api/.elasticbeanstalk/config.yml
             branch-defaults:
               master:
-                environment: udagram-api-dev
+                environment: Udagram-final-project-env
             global:
               application_name: udagram-api
               default_platform: node.js
